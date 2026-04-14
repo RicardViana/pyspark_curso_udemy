@@ -1,0 +1,21 @@
+# Ignorar ficheiro de senhas
+.env
+
+# Ignorar pastas de ambiente virtual
+.venv/
+
+# Ignorar ficheiros temporários do Python
+__pycache__/
+*.pyc
+
+# Ignorar configurações pessoais do VS Code
+.vscode/
+*.code-workspace
+
+# Outros
+*.html
+apoio_gemini.txt
+instalar_ambiente.bat
+apoio/
+teste.py
+*.bat

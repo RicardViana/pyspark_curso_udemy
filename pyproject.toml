@@ -1,0 +1,15 @@
+[project]
+name = "formacao-spark-local"
+version = "0.1.0"
+description = "Ambiente local Windows para o curso Formação Spark com PySpark"
+readme = "README.md"
+# Python 3.11 ou 3.12 são os mais recomendados e estáveis para o PySpark atual (versão 3.5+)
+requires-python = ">=3.11" 
+
+dependencies = [
+    "pyspark>=3.5.0",      # O motor principal do Apache Spark para Python
+    "pandas",              # Muito usado em conjunto com PySpark para manipulação de dados menores
+    "pyarrow",             # Essencial para conversão rápida entre DataFrames Spark e Pandas
+    "jupyterlab",          # Interface excelente para testar códigos do curso passo a passo
+    "findspark"            # Biblioteca útil para ajudar o Python a encontrar a instalação do Spark
+]
