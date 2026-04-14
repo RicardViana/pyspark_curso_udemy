@@ -17,6 +17,7 @@ from pyspark.sql.types import *
 # ==============================================================================
 # 0. PREPARAÇÃO DO AMBIENTE (Criando dados de teste automaticamente)
 # ==============================================================================
+
 os.makedirs("dados", exist_ok=True)
 caminho_csv = "dados/despachantes.csv"
 with open(caminho_csv, "w", encoding="utf-8") as f:
@@ -25,7 +26,7 @@ with open(caminho_csv, "w", encoding="utf-8") as f:
     f.write("3,Fábio,Inativo,Rio de Janeiro,12,2020-07-22\n")
     f.write("4,Gervásio,Ativo,Belo Horizonte,45,2020-01-15\n")
 
-print("Iniciando a sessão do Spark...")
+print("\nIniciando a sessão do Spark...\n")
 
 spark = SparkSession.builder \
     .appName("Estudo_DataFrames_Fernando") \
