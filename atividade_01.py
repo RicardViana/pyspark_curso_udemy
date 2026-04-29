@@ -9,12 +9,12 @@ spark.sparkContext.setLogLevel("ERROR")
 # Caminho dentro do Linux (WSL)
 caminho_base = "/home/ricar/pyspark_udemy/apoio/Spark/download/Atividades"
 
-# 1. Listamos os arquivos que terminam com .parquet
+# Listar os arquivos que terminam com .parquet
 arquivos = [f for f in os.listdir(caminho_base) if f.endswith('.parquet')]
 
 print(f"Encontrados {len(arquivos)} arquivos Parquet.\n")
 
-# 2. Loop para ler e fazer o select em cada um
+# Loop para ler e fazer o select em cada um
 for nome_arquivo in arquivos:
     caminho_completo = os.path.join(caminho_base, nome_arquivo)
     
@@ -23,8 +23,8 @@ for nome_arquivo in arquivos:
     # Lê o arquivo individualmente
     df_temp = spark.read.parquet(caminho_completo)
     
-    # Faz o select (aqui você pode especificar colunas ou usar "*" para todas)
-    df_temp.select("*").show(5) # Mostra apenas as 5 primeiras linhas para não poluir o terminal
+    # Faz o select e mostrar apenas as 5 primeiras linhas
+    df_temp.select("*").show(5) 
     
     print(f"Esquema de {nome_arquivo}:")
     df_temp.printSchema()
