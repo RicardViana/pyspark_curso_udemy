@@ -12,7 +12,7 @@ caminho_base = "/home/ricar/pyspark_udemy/apoio/Spark/download/Atividades"
 # Listar os arquivos que terminam com .parquet
 arquivos = [f for f in os.listdir(caminho_base) if f.endswith('.parquet')]
 
-print(f"Encontrados {len(arquivos)} arquivos Parquet.\n")
+print(f"\nEncontrados {len(arquivos)} arquivos Parquet.\n")
 
 # Loop para ler e fazer o select em cada um
 for nome_arquivo in arquivos:
