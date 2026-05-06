@@ -60,11 +60,15 @@ df_clientes.filter(col("Status").isin("Platinum", "Gold")).show()
 
 # 3) Demostre quanto cada Status de Clientes representa em vendas
 print("Demostre quanto cada Status de Clientes representa em vendas")
-df_resultado = df_clientes.join(df_vendas, df_clientes.ClienteID == df_vendas.ClienteID, "inner")
+df_vendas_join = df_itens_vendas.join(df_vendas, df_itens_vendas.VendasID == df_vendas.VendasID, "left")
+df_final = df_vendas_join.join(df_clientes, df_vendas_join.ClienteID == df_clientes.ClienteID, "left")
 
-df_vendas_por_status = df_resultado.groupBy("Status") \
-    .agg(sum("Total").alias("Total")) \
-    .orderBy(col("Total").desc())
+df_vendas_por_status = df_final.groupBy("Status") \
+    .agg(
+        sum("ValorTotal").alias("ValorTotal"),
+        sum("TotalComDesconto").alias("TotalComDesconto")
+    ) \
+    .orderBy(col("ValorTotal").desc())
 
 df_vendas_por_status.show()
 
