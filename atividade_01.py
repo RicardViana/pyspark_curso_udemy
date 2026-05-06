@@ -1,8 +1,6 @@
 # Import de bibliotecas
-import pyspark.sql.functions as Func
-
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, sum
 
 # Inicializa a sessão
 spark = SparkSession.builder.appName("JoinParquet").getOrCreate()
@@ -21,7 +19,7 @@ df_vendedores = spark.read.parquet(f"{caminho}/Vendedores.parquet")
 print()
 
 df_clientes.show(5, truncate=False)
-print("Estrutura de Vendas:")
+print("\nEstrutura de Vendas:")
 df_clientes.printSchema()
 
 df_itens_vendas.show(5, truncate=False)
@@ -29,7 +27,7 @@ print("\nEstrutura de Produtos:")
 df_itens_vendas.printSchema()
 
 df_produtos.show(5, truncate=False)
-print("Estrutura de Vendas:")
+print("\nEstrutura de Vendas:")
 df_produtos.printSchema()
 
 df_vendas.show(5, truncate=False)
@@ -37,12 +35,12 @@ print("\nEstrutura de Produtos:")
 df_vendas.printSchema()
 
 df_vendedores.show(5, truncate=False)
-print("Estrutura de Vendas:")
+print("\nEstrutura de Vendas:")
 df_vendedores.printSchema()
 
 # Atividades
 
-# Crie uma consulta que mostre, nesta ordem, Nome, Estado e Status
+# 1) Crie uma consulta que mostre, nesta ordem, Nome, Estado e Status
 print("\nCrie uma consulta que mostre, nesta ordem, Nome, Estado e Status")
 
 print("\nSolução 1:")
@@ -56,26 +54,19 @@ df_clientes.select(
     col("Status")
 ).show(5)
 
-# Crie uma consulta que mostre apenas os clientes do Status "platiun" e "gold"
+# 2) Crie uma consulta que mostre apenas os clientes do Status "platiun" e "gold"
 print("\nCrie uma consulta que mostre apenas os clientes do Status ""platiun"" e ""gold""")
 df_clientes.filter(col("Status").isin("Platinum", "Gold")).show()
 
-# Demostre quanto cada Status de Clientes representa em vendas
+# 3) Demostre quanto cada Status de Clientes representa em vendas
 print("Demostre quanto cada Status de Clientes representa em vendas")
-
-# Vamos supor que a chave comum se chama "id_produto"
-# 'inner' é o padrão (mantém apenas o que existe em ambos)
 df_resultado = df_clientes.join(df_vendas, df_clientes.ClienteID == df_vendas.ClienteID, "inner")
 
-df_resultado.show(5, truncate=False)
+df_vendas_por_status = df_resultado.groupBy("Status") \
+    .agg(sum("Total").alias("Total")) \
+    .orderBy(col("Total").desc())
 
-#print("\nResultado do Join (Primeiras 10 linhas):")
-#df_resultado.select(
-    #df_vendas.id_venda, 
-    #df_vendas.data, 
-    #df_produtos.nome_produto, 
-    #df_produtos.preco
-#).show(10)
+df_vendas_por_status.show()
 
-print("\nJoin concluído com sucesso!")
+print("\nAtividades concluídas com sucesso!")
 spark.stop()
