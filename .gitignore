@@ -20,3 +20,4 @@ apoio/
 teste.py
 *.bat
 dados/
+spark-warehouse/
