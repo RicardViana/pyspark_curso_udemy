@@ -31,7 +31,7 @@ with open(arq_reclamacoes, "w", encoding="utf-8") as f:
     f.write("102,2020-09-05,2\n")
 
 print("Iniciando a sessão do Spark (com suporte a Warehouse)...")
-# O Spark cria uma pasta 'spark-warehouse' no seu projeto
+# O Spark cria uma pasta 'spark-warehouse' no projeto
 spark = SparkSession.builder \
     .appName("Estudo_SparkSQL") \
     .config("spark.sql.warehouse.dir", f"{os.getcwd()}/spark-warehouse") \
