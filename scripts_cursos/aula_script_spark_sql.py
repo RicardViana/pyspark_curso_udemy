@@ -1,9 +1,9 @@
 
 # Script de Estudo: Spark SQL, Bancos de Dados, Tabelas e Views
 # Baseado na aula do Prof. Fernando Amaral
-
 import os
 import sys
+import shutil
 sys.stdout.reconfigure(encoding='utf-8')
 
 import findspark
@@ -29,6 +29,11 @@ arq_reclamacoes = "dados/reclamacoes.csv"
 with open(arq_reclamacoes, "w", encoding="utf-8") as f:
     f.write("101,2020-09-01,1\n") 
     f.write("102,2020-09-05,2\n")
+
+# Limpeza física do Warehouse para evitar erro [LOCATION_ALREADY_EXISTS]
+caminho_warehouse = f"{os.getcwd()}/spark-warehouse"
+if os.path.exists(caminho_warehouse):
+    shutil.rmtree(caminho_warehouse)
 
 print("Iniciando a sessão do Spark (com suporte a Warehouse)...")
 # O Spark cria uma pasta 'spark-warehouse' no projeto
