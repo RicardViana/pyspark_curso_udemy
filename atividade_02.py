@@ -62,6 +62,24 @@ df_vendedores.write.mode("overwrite").saveAsTable("Vendedores")
 print("Tabelas persistidas com sucesso no banco VendasVarejo:")
 spark.sql("SHOW TABLES").show()
 
+# Consultar as tabelas criadas no banco de dados
+print("\nAmostra de Dados das Tabelas (Top 5 linhas)")
+
+print("Tabela: Clientes")
+spark.sql("SELECT * FROM Clientes").show(5)
+
+print("Tabela: Vendedores")
+spark.sql("SELECT * FROM Vendedores").show(5)
+
+print("Tabela: Produtos")
+spark.sql("SELECT * FROM Produtos").show(5)
+
+print("Tabela: Vendas")
+spark.sql("SELECT * FROM Vendas").show(5)
+
+print("Tabela: ItensVendas")
+spark.sql("SELECT * FROM ItensVendas").show(5)
+
 # 2) Crie uma consulta que mostre de cada item vendido: Nome do Cliente, Data da Venda, Produto, Vendedor e Valor Total do item
 print("\nExecutando Atividade 2: Consulta Analítica de Itens Vendidos")
 
