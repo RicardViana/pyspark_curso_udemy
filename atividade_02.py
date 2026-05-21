@@ -36,7 +36,7 @@ print()
 print("Atividades")
 
 # 1) Criar um banco de dados no DW do Spark chamado VendasVarejo, e persista todas as tabelas neste banco de dados
-print("\n Executando Atividade 1: Criando Banco e Persistindo Tabelas ")
+print("\nExecutando Atividade 1: Criando Banco e Persistindo Tabelas ")
 
 # Criar o banco de dados caso ele não exista e definir como o banco atual
 spark.sql("CREATE DATABASE IF NOT EXISTS VendasVarejo")
