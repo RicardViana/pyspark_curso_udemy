@@ -21,3 +21,4 @@ teste.py
 *.bat
 dados/
 spark-warehouse/
+*:Zone.Identifier
