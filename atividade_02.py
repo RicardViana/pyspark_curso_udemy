@@ -85,7 +85,7 @@ print("Tabela: ItensVendas")
 spark.sql("SELECT * FROM ItensVendas").show(5)
 
 # 2) Crie uma consulta que mostre de cada item vendido: Nome do Cliente, Data da Venda, Produto, Vendedor e Valor Total do item
-print("\nExecutando Atividade 2: Consulta Analítica de Itens Vendidos")
+print("\nExecutando Atividade 2: Consulta Analítica de Itens Vendidos (DataFrame API)")
 
 # Tabela base para análise é a 'ItensVendas'
 # Usar os dados dela e relacionar com as outras tabelas usando Joins encadeados
@@ -108,6 +108,41 @@ df_relatorio = df_consulta_final.select(
 
 # Visualizar o resultado
 df_relatorio.show(10, truncate=False)
+
+# Fazer um count da df_consulta_final e itensvendas para validar se estão com a mesma qtd de registros 
+print("\nValidação de Volumetria (Data Quality Count)")
+qtd_itens_vendas = df_itens_vendas.count()
+qtd_consulta_final = df_consulta_final.count()
+
+print(f"Quantidade de registros em ItensVendas (Origem): {qtd_itens_vendas}")
+print(f"Quantidade de registros em df_consulta_final (Após Joins): {qtd_consulta_final}")
+
+if qtd_itens_vendas == qtd_consulta_final:
+    print("--> VALIDAÇÃO OK: A volumetria de dados se manteve idêntica após os joins!")
+else:
+    print("--> AVISO: Houve divergência na quantidade de registros. Verifique a integridade das chaves.")
+
+# Criar um 2.1 da solução # 2) usando a solução do professor, ou seja, usando SQL Puro
+print("\nExecutando Atividade 2.1: Consulta Analítica de Itens Vendidos (SQL Puro Otimizado)")
+
+# Otimização técnica aplicada: Uso do padrão ANSI USING para simplificar a sintaxe de chaves homônimas,
+# eliminando a necessidade de apelidos complexos para as colunas de ligação e mantendo o código limpo.
+df_relatorio_sql = spark.sql("""
+    SELECT 
+        c.Cliente   AS `Nome do Cliente`,
+        v.Data      AS `Data da Venda`,
+        p.Produto   AS `Produto`,
+        vd.Vendedor AS `Vendedor`,
+        iv.ValorTotal AS `Valor Total do Item`
+    FROM ItensVendas iv
+    INNER JOIN Vendas v      USING (VendasID)
+    INNER JOIN Clientes c    USING (ClienteID)
+    INNER JOIN Produtos p    USING (ProdutoID)
+    INNER JOIN Vendedores vd USING (VendedorID)
+""")
+
+# Visualizar o resultado do SQL Puro
+df_relatorio_sql.show(10, truncate=False)
 
 print("\nAtividades concluídas com sucesso!")
 spark.stop()
