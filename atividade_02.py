@@ -103,7 +103,7 @@ df_relatorio = df_consulta_final.select(
     col("Data").alias("Data da Venda"),
     col("Produto"),
     col("Vendedor"),
-    col("Total").alias("Valor Total do Item")
+    col("ValorTotal").alias("Valor Total do Item")
 )
 
 # Visualizar o resultado
