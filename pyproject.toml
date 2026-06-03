@@ -11,5 +11,7 @@ dependencies = [
     "pandas",              # Muito usado em conjunto com PySpark para manipulação de dados menores
     "pyarrow",             # Essencial para conversão rápida entre DataFrames Spark e Pandas
     "jupyterlab",          # Interface excelente para testar códigos do curso passo a passo
-    "findspark"            # Biblioteca útil para ajudar o Python a encontrar a instalação do Spark
+    "findspark",           # Biblioteca útil para ajudar o Python a encontrar a instalação do Spark
+    "psycopg2-binary",
+    "python-dotenv"
 ]
