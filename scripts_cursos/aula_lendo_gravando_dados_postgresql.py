@@ -2,34 +2,32 @@
 import os
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
+import psycopg2 
 
 from pyspark.sql import SparkSession
+from dotenv import load_dotenv
 
-# ==============================================================================
-# 1. CONFIGURAÇÃO E CONEXÃO
-# ==============================================================================
+# CARREGANDO VARIÁVEIS DE AMBIENTE
+caminho_do_env = "/home/ricar/pyspark_udemy/configuracoes_seguras/.env"
+load_dotenv(dotenv_path=caminho_do_env)
 
-# Caminho absoluto de onde você salvou o arquivo .jar que baixamos agora pouco
-# Substitua o nome do arquivo abaixo pela versão exata que você baixou (ex: postgresql-42.7.11.jar)
-caminho_driver = "/home/ricar/postgresql-42.7.11.jar" 
+senha_banco = os.getenv("DB_PASSWORD")
+if not senha_banco:
+    raise ValueError(f"ERRO: A senha do banco não foi encontrada!")
 
-# Inicializa a sessão do Spark já injetando o driver JDBC do Postgres
+# CONFIGURAÇÃO E CONEXÃO SPARK
+caminho_driver = "/home/ricar/pyspark_udemy/apoio/postgresql-42.7.11.jar" 
+
 spark = SparkSession.builder \
-    .appName("ConexaoPostgres") \
+    .appName("Carga_Staging_Postgres") \
     .config("spark.jars", caminho_driver) \
     .getOrCreate()
     
 spark.sparkContext.setLogLevel("ERROR")
 
-# ATENÇÃO: Coloque a senha que você configurou para o usuário 'postgres' no seu Linux
-senha_banco = "123456" # <- Mude aqui se a sua senha for diferente
+# LENDO E TRANSFORMANDO (EXTRACT & TRANSFORM)
+print("\n- Conectando, Lendo e Transformand")
 
-# ==============================================================================
-# 2. LENDO DADOS DO POSTGRESQL (EXTRACT)
-# ==============================================================================
-print("\n--- Conectando e Lendo a Tabela Vendas ---")
-
-# Lendo a tabela 'vendas' do PostgreSQL
 resumo = spark.read.format("jdbc") \
     .option("url", "jdbc:postgresql://localhost:5432/vendas") \
     .option("dbtable", "vendas") \
@@ -38,32 +36,73 @@ resumo = spark.read.format("jdbc") \
     .option("driver", "org.postgresql.Driver") \
     .load()
 
-# ==============================================================================
-# 3. TRANSFORMANDO OS DADOS (TRANSFORM)
-# ==============================================================================
-print("\n--- Transformando os Dados ---")
-
-# Criando um novo DataFrame apenas com as colunas necessárias (Sem o .show() aqui!)
 vendadata = resumo.select("data", "total")
+qtd_nova_carga = vendadata.count()
 
-print("Amostra do novo DataFrame:")
-vendadata.show(5)
+print(f"Dados processados em memória. Total de linhas para atualizar/inserir: {qtd_nova_carga}")
 
-# ==============================================================================
-# 4. GRAVANDO DE VOLTA NO BANCO DE DADOS (LOAD)
-# ==============================================================================
-print("\n--- Gravando a Nova Tabela no PostgreSQL ---")
+# GRAVANDO NA STAGING TABLE (LOAD - OVERWRITE)
+print("\n-Gravando na Staging Table")
 
-# Vamos gravar o dataframe reduzido de volta no banco criando uma nova tabela chamada 'vendadata'
+# O Spark joga os dados na tabela temporária (ele apaga a staging antiga e cria uma nova rapidinho)
 vendadata.write.format("jdbc") \
     .option("url", "jdbc:postgresql://localhost:5432/vendas") \
-    .option("dbtable", "vendadata") \
+    .option("dbtable", "vendadata_staging") \
     .option("user", "postgres") \
     .option("password", senha_banco) \
     .option("driver", "org.postgresql.Driver") \
     .mode("overwrite") \
     .save()
 
-print("--> SUCESSO: Dados gravados no PostgreSQL!")
+print("--> Dados carregados na Staging com sucesso!")
 
+# ORQUESTRANDO O UPSERT (SQL PURO NO POSTGRES)
+print("\n- Executando o UPSERT na Tabela Oficial")
+
+# Vamos usar um bloco 'with' para garantir que a conexão com o banco vai fechar no final
+try:
+    with psycopg2.connect(
+        host="localhost",
+        database="vendas",
+        user="postgres",
+        password=senha_banco,
+        port="5432"
+    ) as conn:
+        with conn.cursor() as cursor:
+            
+            # Passo A: Garantir que a tabela oficial existe (Caso seja a 1ª vez rodando o script)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS vendadata (
+                    data DATE,
+                    total DOUBLE PRECISION
+                );
+            """)
+            
+            # Passo B: O DELETE (Apaga da tabela oficial tudo que veio de atualização na staging)
+            # A chave de comparação aqui é a 'data'. Se vier uma data repetida na carga, a velha é apagada.
+            cursor.execute("""
+                DELETE FROM vendadata 
+                WHERE data IN (SELECT data FROM vendadata_staging);
+            """)
+            
+            linhas_deletadas = cursor.rowcount
+            print(f"--> {linhas_deletadas} registros antigos foram apagados para dar lugar aos novos.")
+            
+            # Passo C: O INSERT (Copia tudo da staging para a oficial)
+            cursor.execute("""
+                INSERT INTO vendadata (data, total)
+                SELECT data, total FROM vendadata_staging;
+            """)
+            
+            linhas_inseridas = cursor.rowcount
+            print(f"--> {linhas_inseridas} registros (novos + atualizados) foram inseridos com sucesso!")
+            
+            # O .commit() é o que salva a transação permanentemente no banco
+            conn.commit()
+            
+except Exception as e:
+    print(f"--> ERRO durante o UPSERT no PostgreSQL: {e}")
+
+# 5. FINALIZAÇÃO E LIMPEZA
+print("\nProcesso finalizado!")
 spark.stop()
