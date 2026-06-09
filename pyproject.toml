@@ -13,5 +13,6 @@ dependencies = [
     "jupyterlab",          # Interface excelente para testar códigos do curso passo a passo
     "findspark",           # Biblioteca útil para ajudar o Python a encontrar a instalação do Spark
     "psycopg2-binary",
-    "python-dotenv"
+    "python-dotenv",
+    "pymongo>=4.17.0",
 ]
