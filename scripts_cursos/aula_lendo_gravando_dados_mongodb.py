@@ -1,17 +1,26 @@
 import json
 import re
+import os # <-- Adicionado o 'os' para ler o sistema
 from pymongo import MongoClient
+from dotenv import load_dotenv # <-- Adicionado para ler o .env
 
 # ==============================================================================
-# 1. CONFIGURAÇÕES E CAMINHOS
+# 1. CONFIGURAÇÕES E VARIÁVEIS DE AMBIENTE
 # ==============================================================================
-# Caminho nativo do Linux (ignorando a parte do \\wsl.localhost)
-caminho_arquivo = "/home/ricar/pyspark_udemy/apoio/Spark/download/mongo/posts.json"
+# 1.1 Aponta e carrega o arquivo .env
+caminho_do_env = "/home/ricar/pyspark_udemy/configuracoes_seguras/.env"
+load_dotenv(dotenv_path=caminho_do_env)
+
+# 1.2 Puxa o caminho do arquivo JSON de forma dinâmica e segura
+caminho_arquivo = os.getenv("CAMINHO_JSON_POSTS")
+
+# 1.3 Validação de segurança (evita que o script rode se a variável não existir)
+if not caminho_arquivo:
+    raise ValueError(f"ERRO: A variável 'CAMINHO_JSON_POSTS' não foi encontrada no arquivo .env!")
 
 print("--- Conectando ao MongoDB Local ---")
 cliente = MongoClient("mongodb://localhost:27017/")
 
-# Vamos usar o mesmo banco da aula anterior, mas criar uma coleção nova chamada 'posts'
 banco_de_dados = cliente["loja_curso"]
 colecao_posts = banco_de_dados["posts"]
 
